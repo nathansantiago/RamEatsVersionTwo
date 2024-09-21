@@ -1,5 +1,6 @@
 import React from 'react';
-import Link from "next/link"
+import Link from "next/link";
+import { useRouter } from 'next/router';
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -16,7 +17,7 @@ const Footer: React.FC = () => {
             <NavigationMenu>
                 <NavigationMenuList>
                     <NavigationMenuItem>
-                    <Link href="/docs" legacyBehavior passHref>
+                    <Link href="/home" legacyBehavior passHref>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                         Home
                         </NavigationMenuLink>
@@ -25,7 +26,7 @@ const Footer: React.FC = () => {
                 </NavigationMenuList>
                 <NavigationMenuList>
                     <NavigationMenuItem>
-                    <Link href="/docs" legacyBehavior passHref>
+                    <Link href="/settings" legacyBehavior passHref>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                         Settings
                         </NavigationMenuLink>
@@ -34,7 +35,7 @@ const Footer: React.FC = () => {
                 </NavigationMenuList>
                 <NavigationMenuList>
                     <NavigationMenuItem>
-                    <Link href="/docs" legacyBehavior passHref>
+                    <Link href="/profile" legacyBehavior passHref>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                         Profile
                         </NavigationMenuLink>
