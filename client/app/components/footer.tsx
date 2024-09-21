@@ -17,7 +17,7 @@ const Footer: React.FC = () => {
             <NavigationMenu>
                 <NavigationMenuList>
                     <NavigationMenuItem>
-                    <Link href="/home" legacyBehavior passHref>
+                    <Link href="/dashboard/home" legacyBehavior passHref>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                         Home
                         </NavigationMenuLink>
@@ -26,18 +26,18 @@ const Footer: React.FC = () => {
                 </NavigationMenuList>
                 <NavigationMenuList>
                     <NavigationMenuItem>
-                    <Link href="/settings" legacyBehavior passHref>
+                    <Link href="/dashboard/menu" legacyBehavior passHref>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                        Settings
+                        Menu
                         </NavigationMenuLink>
                     </Link>
                     </NavigationMenuItem>
                 </NavigationMenuList>
                 <NavigationMenuList>
                     <NavigationMenuItem>
-                    <Link href="/profile" legacyBehavior passHref>
+                    <Link href="/dashboard/settings" legacyBehavior passHref>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                        Profile
+                        Settings
                         </NavigationMenuLink>
                     </Link>
                     </NavigationMenuItem>
