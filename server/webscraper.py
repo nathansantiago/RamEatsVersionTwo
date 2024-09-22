@@ -26,10 +26,11 @@ for station in stations:
         item_soup = BeautifulSoup(html, "html.parser")
         # Finds item descriptions, however most items have no description
         # description = nutrition_soup.find("p").text.split("<\/p>")[0]
-        #  TODO: Parse the returned allergen string into a list of allergens
         allergens = item_soup.find("div", {"id": 'nutrition-info-header'}).find("p").text  # Finds the allergens in a string seperated by commas
         nutrition_entries = item_soup.find_all("tr")  # Finds the nutrition info in a table
         for nutrion_entry in nutrition_entries:
-            nutrition_name = nutrion_entry.find("th").text.strip().replace(" ", "")
-            print(nutrition_name)
+            nutrition_mapping = str.maketrans("", "", " \n\t")  # Specifies characters that should be removed from the found values
+            nutrition_info = nutrion_entry.find("th").text.translate(nutrition_mapping)
+            nutrition_info = re.split(r'(\d+|\D+)', nutrition_info, 1)  # Splits the string into two parts at the first digit (creates a list with 3 elements first is empty)
+            print(nutrition_info)
         exit()
