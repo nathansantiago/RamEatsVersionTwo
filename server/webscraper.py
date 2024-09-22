@@ -1,6 +1,16 @@
 #Scraper Imports
-import requests, json, re
+import requests, re, os
+from datetime import datetime
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+from supabase import create_client, Client
+
+load_dotenv()
+
+url: str = os.environ.get("SUPABASE_URL")
+key: str = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+supabase: Client = create_client(url, key)
+
 
 #Scrape Data
 location_url = "https://dining.unc.edu/locations/chase/"
@@ -9,6 +19,38 @@ data = requests.get(location_url)
 html = data.text
 
 soup = BeautifulSoup(html, "html.parser")
+
+meals = soup.find_all("button", {"class": "c-tabs-nav__link"})  # Finds all the meal buttons on the page
+for meal in meals:
+    cleaned_meal_name = re.sub(r'\s*\(\d{1,2}[ap]m-\d{1,2}[ap]m\)\s*', '', meal.text).strip()  # Cleans the meal name
+    meal_start_time = re.search(r'\d{1,2}[ap]m', meal.text).group(0)  # Finds the start time of the meal
+    meal_end_time = re.search(r'(?<=-)\d{1,2}[ap]m', meal.text).group(0)  # Finds the end time of the meal
+    
+    # Parse the start time string into a datetime object
+    meal_start_time = datetime.strptime(meal_start_time, '%I%p').time()
+    meal_end_time = datetime.strptime(meal_end_time, '%I%p').time()
+
+    # Format the time as needed (e.g., 'HH:MM:SS')
+    meal_start_time_formatted = meal_start_time.strftime('%H:%M:%S')
+    meal_end_time_formatted = meal_end_time.strftime('%H:%M:%S')
+
+    # Upsert the meal data into the Supabase table
+    try:
+        response = (
+            supabase.table("Meals")
+            .upsert(
+                {
+                    "meal_id": hash(cleaned_meal_name),
+                    "meal_name": cleaned_meal_name,
+                    "meal_start_time": meal_start_time_formatted,
+                    "meal_end_time": meal_end_time_formatted,
+                },
+                on_conflict=["meal_id", "meal_name", "meal_start_time", "meal_end_time"],  # Specifies column to check for conflicts
+            )
+            .execute()
+        )
+    except:
+        print("Error upserting meal data: ", Exception)
 
 meal = soup.find("div", {"id": "tabinfo-3"})  # Finds the third meal of the day manipulate the number for each meal
 
