@@ -21,9 +21,9 @@ html = data.text
 soup = BeautifulSoup(html, "html.parser")
 
 meals = soup.find_all("button", {"class": "c-tabs-nav__link"})  # Finds all the meal buttons on the page
-meal_id = -1  # Initialize the meal id to -1 to avoid conflicts with the database
+meal_num = 0
 for meal in meals:
-    meal_id += 1
+    meal_num += 1
     cleaned_meal_name = re.sub(r'\s*\(\d{1,2}(:\d{2})?[ap]m-\d{1,2}(:\d{2})?[ap]m\)\s*', '', meal.text).strip()  # Cleans the meal name
     meal_start_time = re.search(r'\d{1,2}(:\d{2})?[ap]m', meal.text).group(0)  # Finds the start time of the meal
     meal_end_time = re.search(r'(?<=-)\d{1,2}(:\d{2})?[ap]m', meal.text).group(0)  # Finds the end time of the meal
@@ -42,7 +42,6 @@ for meal in meals:
             supabase.table("Meals")
             .upsert(
                 {
-                    "meal_id": meal_id,
                     "meal_name": cleaned_meal_name,
                     "meal_start_time": meal_start_time_formatted,
                     "meal_end_time": meal_end_time_formatted,
@@ -51,23 +50,25 @@ for meal in meals:
             )
             .execute()
         )
-    except:
-        print("Error upserting meal data: ", Exception)
+        # Retrieve the meal_id from the response
+        meal_id = response.data[0]['meal_id']
+    except Exception as message:
+        print("Error upserting meal data: ", message)
 
-    current_meal = soup.find("div", {"id": "tabinfo-" + (str)(meal_id + 1)})  # Finds the each meal of the day by its id
+    current_meal = soup.find("div", {"id": "tabinfo-" + (str)(meal_num)})  # Finds the each meal of the day by its id
 
     stations = current_meal.find_all("div", {"class": "menu-station"})
 
-    station_id = -1
     for station in stations:
-        station_id += 1
+        # Finds each menu item and its station name.
+        station_name = station.find("button").text
+        
         # Upsert the meal data into the Supabase FoodStation table
         try:
             response = (
                 supabase.table("FoodStations")
                 .upsert(
                     {
-                        "station_id": station_id,
                         "station_name": station_name,
                         "meal_id": meal_id,
                     },
@@ -75,15 +76,13 @@ for meal in meals:
                 )
                 .execute()
             )
-        except:
-            print("Error upserting food station data: ", Exception)
-        # Finds each menu item and its station name.
-        station_name = station.find("button").text
+            # Retrieve the station_id from the response
+            station_id = response.data[0]['station_id']
+        except Exception as message:
+            print("Error upserting food station data: ", message)
         
         items = station.find_all("li", {"class": "menu-item-li"})
-        option_id = -1
         for item in items:
-            option_id += 1
             item_name = item.find("a").text
             data = requests.get(item_url + item.find("a").get("data-recipe"))  # Get the recipe json data for the item using the id
             html = data.json().get("html", "")  # Parse the html from the json data
@@ -96,7 +95,6 @@ for meal in meals:
                     supabase.table("MealsOptions")
                     .upsert(
                         {
-                            "option_id": option_id,
                             "station_id": station_id,
                             "option_name": item_name,
                             "ingredients": ingredients,
@@ -105,22 +103,21 @@ for meal in meals:
                     )
                     .execute()
                 )
-            except:
-                print("Error upserting meal options data: ", Exception)
+                # Retrieve the option_id from the response
+                option_id = response.data[0]['option_id']
+            except Exception as message:
+                print("Error upserting food options data: ", message)
             # Finds item descriptions, however most items have no description
             # description = nutrition_soup.find("p").text.split("<\/p>")[0]
             try:
                 allergens = item_soup.find("div", {"id": 'nutrition-info-header'}).find("p").text.split(",")  # Finds the allergens in a string seperated by commas
-                nutrient_id = -6
                 for allergen in allergens:
-                    nutrient_id += 1
                     # Upsert the meal data into the Supabase MealsOptions table
                     try:
                         response = (
                             supabase.table("NutrientInformation")
                             .upsert(
                                 {
-                                    "nutrient_id": nutrient_id,
                                     "option_id": option_id,
                                     "nutrient_name": allergen,
                                     "nutrient_value": 1,
@@ -129,14 +126,12 @@ for meal in meals:
                             )
                             .execute()
                         )
-                    except:
-                        print("Error upserting nutrient data: ", Exception)
+                    except Exception as message:
+                        print("Error upserting allergen data: ", message)
             except:
                 print("No allergens found")
             nutrition_entries = item_soup.find_all("tr")  # Finds the nutrition info in a table
-            nutrient_id = -1
             for nutrition_entry in nutrition_entries:
-                nutrient_id += 1
                 nutrition_mapping = str.maketrans("", "", " \n\t")  # Specifies characters that should be removed from the found values
                 nutrition_info = nutrition_entry.find("th").text.translate(nutrition_mapping)
                 nutrition_info = re.split(r'(\d+|\D+|½)', nutrition_info, 1)  # Splits the string into two parts at the first digit (creates a list with 3 elements first is empty)
@@ -146,7 +141,6 @@ for meal in meals:
                         supabase.table("NutrientInformation")
                         .upsert(
                             {
-                                "nutrient_id": nutrient_id,
                                 "option_id": option_id,
                                 "nutrient_name": nutrition_info[1],
                                 "nutrient_value": nutrition_info[2],
@@ -155,5 +149,5 @@ for meal in meals:
                         )
                         .execute()
                     )
-                except:
-                    print("Error upserting nutrient data: ", Exception)
+                except Exception as message:
+                    print("Error upserting nutrient data: ", message)
