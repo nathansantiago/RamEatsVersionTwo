@@ -45,8 +45,9 @@ for meal in meals:
                     "meal_name": cleaned_meal_name,
                     "meal_start_time": meal_start_time_formatted,
                     "meal_end_time": meal_end_time_formatted,
+                    "meal_date": datetime.now().strftime('%Y-%m-%d'),
                 },
-                on_conflict=["meal_id", "meal_name", "meal_start_time", "meal_end_time"],  # Specifies column to check for conflicts
+                on_conflict=["meal_id", "meal_name", "meal_start_time", "meal_end_time", "meal_date"],  # Specifies column to check for conflicts
             )
             .execute()
         )
@@ -54,6 +55,7 @@ for meal in meals:
         meal_id = response.data[0]['meal_id']
     except Exception as message:
         print("Error upserting meal data: ", message)
+    exit()
 
     current_meal = soup.find("div", {"id": "tabinfo-" + (str)(meal_num)})  # Finds the each meal of the day by its id
 
@@ -62,7 +64,7 @@ for meal in meals:
     for station in stations:
         # Finds each menu item and its station name.
         station_name = station.find("button").text
-        
+
         # Upsert the meal data into the Supabase FoodStation table
         try:
             response = (
