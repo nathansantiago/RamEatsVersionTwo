@@ -33,7 +33,7 @@ export default function Home() {
     if (typeof window !== 'undefined') {
       checkSession();
     }
-  }, []);
+  }, [router]);
 
   async function handleLogin() {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -43,7 +43,10 @@ export default function Home() {
     if (error) {
       alert(error.message);
     } else {
-      alert("Logged " + data.user + " in successfully!");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.push("/dashboard/home");
+      }
     }
   }
 
