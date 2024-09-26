@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -36,6 +37,12 @@ export default function Home() {
   }, [router]);
 
   async function handleLogin() {
+    // Check for null values
+    if (!email || !password) {
+      alert("Email and password are required.");
+      return;
+    }
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -51,14 +58,70 @@ export default function Home() {
   }
 
   async function handleRegister() {
+    // Check for null values
+    if (!email || !password || !username) {
+      alert("Email, password, and username are required.");
+      return;
+    }
+
+    // Check for duplicate email
+    const { data: emailData, error: emailError } = await supabase
+      .from('Users')
+      .select('email')
+      .eq('email', email)
+      .single();
+
+    if (emailError && emailError.code !== 'PGRST116') {
+      alert("Error checking email: " + emailError.message);
+      return;
+    }
+
+    if (emailData) {
+      alert("Email is already in use.");
+      return;
+    }
+
+    // Check for duplicate username
+    const { data: usernameData, error: usernameError } = await supabase
+      .from('Users')
+      .select('username')
+      .eq('username', username)
+      .single();
+
+    if (usernameError && usernameError.code !== 'PGRST116') {
+      alert("Error checking username: " + usernameError.message);
+      return;
+    }
+
+    if (usernameData) {
+      alert("Username is already in use.");
+      return;
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
+    
     if (error) {
       alert(error.message);
     } else {
-      alert("Registered " + data.user + " successfully!");
+      // Extract the uuid from the signed-up user
+      const uuid = data.user?.id;
+  
+      if (uuid) {
+        // Insert the uuid and email into the Users table
+        const { error: insertError } = await supabase
+          .from('Users')
+          .insert([{ user_uid: uuid, email, username }]);
+        if (insertError) {
+          alert("Error inserting user into Users table: " + insertError.message);
+        } else {
+          alert("Registered " + email + " successfully!");
+        }
+      } else {
+        alert("Error: User ID not found.");
+      }
     }
   }
 
@@ -123,10 +186,22 @@ export default function Home() {
           <DialogHeader>
             <DialogTitle>Register</DialogTitle>
             <DialogDescription>
-              Enter your username and password to register your account.
+              Enter your username, email, and password to register your account.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="username" className="text-right">
+                Username
+              </Label>
+              <Input
+                id="username"
+                type="text"
+                className="col-span-3"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="email" className="text-right">
                 Email
