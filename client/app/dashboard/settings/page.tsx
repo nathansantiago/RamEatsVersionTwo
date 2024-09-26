@@ -17,35 +17,43 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+  } from "@/components/ui/carousel"
  
 const formSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
+  username: z.string().max(30, {
+    message: "Username can't be more than 30 characters.",
+  }).optional(),
   email: z.string().email({
     message: "Invalid email address.",
-  }),
+  }).optional(),
   password: z.string().min(6, {
     message: "Password must be at least 6 characters.",
-  }),
-  height: z.string().min(1, {
-    message: "Height is required.",
-  }),
-  weight: z.string().min(1, {
-    message: "Weight is required.",
-  }),
-  age: z.string().min(1, {
-    message: "Age is required.",
-  }),
-  activity_level: z.string().min(1, {
-    message: "Activity level is required.",
-  }),
-  gender: z.string().min(1, {
+  }).optional(),
+  height: z.string().transform((val) => parseInt(val, 10)).refine((val) => !isNaN(val) && (val > 0), {
+    message: "Height must be a positive number.",
+  }).optional(),
+  weight: z.string().transform((val) => parseInt(val, 10)).refine((val) => !isNaN(val) && (val > 0), {
+    message: "Weight must be a positive number.",
+  }).optional(),
+  age: z.string().transform((val) => parseInt(val, 10)).refine((val) => !isNaN(val) && (val > 0), {
+    message: "Age must be a positive number.",
+  }).optional(),
+  activity_level: z.string().transform((val) => parseInt(val, 10)).refine((val) => !isNaN(val) && (val > 0), {
+    message: "Activity level must be a positive number.",
+  }).optional(),
+  gender: z.string().min(4, {
     message: "Gender is required.",
-  }),
+  }).optional(),
   fitness_goal: z.string().min(1, {
     message: "Fitness goal is required.",
-  }),
+  }).optional(),
 })
 
 const SettingsPage: React.FC = () => {
@@ -78,161 +86,179 @@ const SettingsPage: React.FC = () => {
     return (
         <div className="flex flex-col items-center">
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-3 gap-3">
-                    <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Username</FormLabel>
-                        <FormControl>
-                            <Input placeholder="shadcn" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                            This is your public display name.
-                        </FormDescription>
-                        <FormMessage />
-                        </FormItem>
-                        
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                            <Input placeholder="email@email.com" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                            This is your email.
-                        </FormDescription>
-                        <FormMessage />
-                        </FormItem>
-                        
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                            <Input placeholder="password" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                            This is your password.
-                        </FormDescription>
-                        <FormMessage />
-                        </FormItem>
-                        
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="height"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Height</FormLabel>
-                        <FormControl>
-                            <Input placeholder="56" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                            This is your height in inches.
-                        </FormDescription>
-                        <FormMessage />
-                        </FormItem>
-                        
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="weight"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Weight</FormLabel>
-                        <FormControl>
-                            <Input placeholder="120" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                            This is your weight in pounds.
-                        </FormDescription>
-                        <FormMessage />
-                        </FormItem>
-                        
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="age"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Age</FormLabel>
-                        <FormControl>
-                            <Input placeholder="20" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                            This is your age in years.
-                        </FormDescription>
-                        <FormMessage />
-                        </FormItem>
-                        
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="activity_level"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Activity Level</FormLabel>
-                        <FormControl>
-                            <Input placeholder="2200" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                            This is your estimated calories burned per day.
-                        </FormDescription>
-                        <FormMessage />
-                        </FormItem>
-                        
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="gender"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Gender</FormLabel>
-                        <FormControl>
-                            <Input placeholder="female" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                            This is the gender you identify as.
-                        </FormDescription>
-                        <FormMessage />
-                        </FormItem>
-                        
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="fitness_goal"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Fitness Goal</FormLabel>
-                        <FormControl>
-                            <Input placeholder="maintain" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                            This is your weight goals.
-                        </FormDescription>
-                        <FormMessage />
-                        </FormItem>
-                        
-                    )}
-                    />
-                    <Button type="submit">Submit</Button>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
+                    <Carousel 
+                        className="w-full max-w-xs"
+                        opts={{
+                            align: "start",
+                            loop: true,
+                        }}
+                    >
+                        <CarouselContent>
+                            <CarouselItem key={1}>
+                                <FormField
+                                control={form.control}
+                                name="username"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Username</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="shadcn" {...field} />
+                                    </FormControl>
+                                    <FormDescription>
+                                        This is your public display name.
+                                    </FormDescription>
+                                    <FormMessage />
+                                    </FormItem>
+                                    
+                                )}
+                                />
+                                <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="email@email.com" {...field} />
+                                    </FormControl>
+                                    <FormDescription>
+                                        This is your email.
+                                    </FormDescription>
+                                    <FormMessage />
+                                    </FormItem>
+                                    
+                                )}
+                                />
+                                <FormField
+                                control={form.control}
+                                name="password"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Password</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="password" {...field} />
+                                    </FormControl>
+                                    <FormDescription>
+                                        This is your password.
+                                    </FormDescription>
+                                    <FormMessage />
+                                    </FormItem>
+                                    
+                                )}
+                                />
+                            </CarouselItem>
+                            <CarouselItem key={2}>
+                                <FormField
+                                control={form.control}
+                                name="height"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Height</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="56" {...field} />
+                                    </FormControl>
+                                    <FormDescription>
+                                        This is your height in inches.
+                                    </FormDescription>
+                                    <FormMessage />
+                                    </FormItem>
+                                    
+                                )}
+                                />
+                                <FormField
+                                control={form.control}
+                                name="weight"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Weight</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="120" {...field} />
+                                    </FormControl>
+                                    <FormDescription>
+                                        This is your weight in pounds.
+                                    </FormDescription>
+                                    <FormMessage />
+                                    </FormItem>
+                                    
+                                )}
+                                />
+                                <FormField
+                                control={form.control}
+                                name="age"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Age</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="20" {...field} />
+                                    </FormControl>
+                                    <FormDescription>
+                                        This is your age in years.
+                                    </FormDescription>
+                                    <FormMessage />
+                                    </FormItem>
+                                    
+                                )}
+                                />
+                            </CarouselItem>
+                            <CarouselItem key={3}>
+                                <FormField
+                                control={form.control}
+                                name="activity_level"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Activity Level</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="2200" {...field} />
+                                    </FormControl>
+                                    <FormDescription>
+                                        This is your estimated calories burned per day.
+                                    </FormDescription>
+                                    <FormMessage />
+                                    </FormItem>
+                                    
+                                )}
+                                />
+                                <FormField
+                                control={form.control}
+                                name="gender"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Gender</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="female" {...field} />
+                                    </FormControl>
+                                    <FormDescription>
+                                        This is the gender you identify as.
+                                    </FormDescription>
+                                    <FormMessage />
+                                    </FormItem>
+                                    
+                                )}
+                                />
+                                <FormField
+                                control={form.control}
+                                name="fitness_goal"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Fitness Goal</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="maintain" {...field} />
+                                    </FormControl>
+                                    <FormDescription>
+                                        This is your weight goals.
+                                    </FormDescription>
+                                    <FormMessage />
+                                    </FormItem>
+                                    
+                                )}
+                                />
+                            </CarouselItem>
+                        </CarouselContent>
+                        <CarouselPrevious />
+                        <CarouselNext />
+                    </Carousel>
+                    <Button type="submit">Save</Button>
                 </form>
             </Form>
             <div className="pt-4"><Button onClick={handleLogout}>Log Out</Button></div>
