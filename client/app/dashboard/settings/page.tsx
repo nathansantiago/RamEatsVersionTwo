@@ -25,6 +25,15 @@ import {
     CarouselNext,
     CarouselPrevious,
   } from "@/components/ui/carousel"
+
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+  } from "@/components/ui/select"
+  
  
 const formSchema = z.object({
   username: z.string().max(30, {
@@ -48,11 +57,11 @@ const formSchema = z.object({
   activity_level: z.string().transform((val) => parseInt(val, 10)).refine((val) => !isNaN(val) && (val > 0), {
     message: "Activity level must be a positive number.",
   }).optional(),
-  gender: z.string().min(4, {
-    message: "Gender is required.",
+  gender: z.string().transform((val) => parseInt(val, 10)).refine((val) => !isNaN(val) && (val >= 0), {
+    message: "Select an option.",
   }).optional(),
-  fitness_goal: z.string().min(1, {
-    message: "Fitness goal is required.",
+  fitness_goal: z.string().transform((val) => parseInt(val, 10)).refine((val) => !isNaN(val) && (val >= 0), {
+    message: "Select an option.",
   }).optional(),
 })
 
@@ -71,16 +80,39 @@ const SettingsPage: React.FC = () => {
     // 1. Define your form.
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-        username: "",
-        },
+        // defaultValues: {
+        // username: "",
+        // },
     })
     
     // 2. Define a submit handler.
-    function onSubmit(values: z.infer<typeof formSchema>) {
+    async function onSubmit(values: z.infer<typeof formSchema>) {
         // Do something with the form values.
         // ✅ This will be type-safe and validated.
-        console.log(values)
+        // console.log(values);
+        const definedValues = Object.fromEntries(
+            Object.entries(values).filter(([_, value]) => value !== undefined)
+        );
+
+        // Create a new object with the transformed gender value
+        const transformedValues = {
+            ...definedValues,
+            gender: definedValues.gender ? definedValues.gender === 1 : undefined,
+        };
+
+        //TODO: Determine why supabase is being uploaded as null (most likely rls policies)
+        // Upload the defined values to Supabase
+        const { data: user } = await supabase.auth.getUser();
+        const { data, error } = await supabase
+            .from('Users')
+            .update([transformedValues])
+            .eq('user_uid', user?.user?.id);
+
+        if (error) {
+            console.error('Error uploading data:', error);
+        } else {
+            console.log('Data uploaded successfully:', data);
+        }
     }
 
     return (
@@ -225,9 +257,19 @@ const SettingsPage: React.FC = () => {
                                 render={({ field }) => (
                                     <FormItem>
                                     <FormLabel>Gender</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="female" {...field} />
-                                    </FormControl>
+                                    <Select onValueChange={field.onChange}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select the gender you identify as." />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="0">male</SelectItem>
+                                            <SelectItem value="1">female</SelectItem>
+                                            <SelectItem value="2">other</SelectItem>
+                                            <SelectItem value="3">prefer not to specify</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                     <FormDescription>
                                         This is the gender you identify as.
                                     </FormDescription>
@@ -242,11 +284,20 @@ const SettingsPage: React.FC = () => {
                                 render={({ field }) => (
                                     <FormItem>
                                     <FormLabel>Fitness Goal</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="maintain" {...field} />
-                                    </FormControl>
+                                    <Select onValueChange={field.onChange}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a weight goal" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="0">bulk</SelectItem>
+                                            <SelectItem value="1">maintain</SelectItem>
+                                            <SelectItem value="2">cut</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                     <FormDescription>
-                                        This is your weight goals.
+                                        This is your weight goal.
                                     </FormDescription>
                                     <FormMessage />
                                     </FormItem>
