@@ -90,23 +90,26 @@ const SettingsPage: React.FC = () => {
         // Do something with the form values.
         // ✅ This will be type-safe and validated.
         // console.log(values);
+
+        // Create a new object with the transformed gender value
+        const transformedValues = {
+            ...values,
+            gender: values.gender ? values.gender === 1 : undefined,
+        };
+
         const definedValues = Object.fromEntries(
             Object.entries(values).filter(([_, value]) => value !== undefined)
         );
 
-        // Create a new object with the transformed gender value
-        const transformedValues = {
-            ...definedValues,
-            gender: definedValues.gender ? definedValues.gender === 1 : undefined,
-        };
+        
 
-        //TODO: Determine why supabase is being uploaded as null (most likely rls policies)
         // Upload the defined values to Supabase
         const { data: user } = await supabase.auth.getUser();
         const { data, error } = await supabase
             .from('Users')
-            .update([transformedValues])
-            .eq('user_uid', user?.user?.id);
+            .update(definedValues)
+            .eq('user_uid', user?.user?.id)
+            .select();
 
         if (error) {
             console.error('Error uploading data:', error);
