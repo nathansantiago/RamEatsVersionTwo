@@ -12,13 +12,17 @@ const Header: React.FC = () => {
         router.replace('/dashboard/settings');
     };
 
+    const handleHome = async () => {
+        router.replace('/dashboard/home');
+    }
+
     return (
         <header className='flex justify-between'>
-            <h1 className='title'>RamEats</h1>
-            <Avatar onClick={handleProfile}>
+            <h1 className='title cursor-pointer' onClick={handleHome}>RamEats</h1>
+            {/* <Avatar onClick={handleProfile}>
                 <AvatarImage src="https://github.com/shadcn.png" />
                 <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
+            </Avatar> */}
         </header>
     );
 };

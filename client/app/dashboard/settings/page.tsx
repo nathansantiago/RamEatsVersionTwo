@@ -309,8 +309,10 @@ const SettingsPage: React.FC = () => {
                                 />
                             </CarouselItem>
                         </CarouselContent>
-                        <CarouselPrevious />
-                        <CarouselNext />
+                        <div className='hidden sm:flex'>
+                            <CarouselPrevious />
+                            <CarouselNext />
+                        </div>
                     </Carousel>
                     <Button type="submit">Save</Button>
                 </form>
