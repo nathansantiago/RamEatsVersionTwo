@@ -54,7 +54,7 @@ const formSchema = z.object({
   age: z.string().transform((val) => parseInt(val, 10)).refine((val) => !isNaN(val) && (val > 0), {
     message: "Age must be a positive number.",
   }).optional(),
-  activity_level: z.string().transform((val) => parseInt(val, 10)).refine((val) => !isNaN(val) && (val > 0), {
+  maintenance_cal: z.string().transform((val) => parseInt(val, 10)).refine((val) => !isNaN(val) && (val > 0), {
     message: "Activity level must be a positive number.",
   }).optional(),
   gender: z.string().transform((val) => parseInt(val, 10)).refine((val) => !isNaN(val) && (val >= 0), {
@@ -239,12 +239,12 @@ const SettingsPage: React.FC = () => {
                             <CarouselItem key={3}>
                                 <FormField
                                 control={form.control}
-                                name="activity_level"
+                                name="maintenance_cal"
                                 render={({ field }) => (
                                     <FormItem>
                                     <FormLabel>Activity Level</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="2200" {...field} />
+                                        <Input placeholder="18" {...field} />
                                     </FormControl>
                                     <FormDescription>
                                         This is your estimated calories burned per day.
