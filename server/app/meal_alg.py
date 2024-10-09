@@ -1,10 +1,13 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from supabase import create_client, Client
 from typing import List, Dict, Any
+from dotenv import load_dotenv
+from server.app.utils.utils import get_user_data, get_station_id, get_menu_data, categorize_items, calculate_daily_cal
 import os
 
 app = FastAPI()
+load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
@@ -12,13 +15,9 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 def calculate_meal(user_data: Dict[str, Any], menu: List[Dict[str, Any]]) -> Dict[str, Any]:
-    maintenance_cal = user_data["maintainance_cal"]
-    fitness_goal = user_data["fitness_goal"]
-    user_data['height'] *= 2.54  # Convert height from inches to cm
-    user_data['weight'] *= 0.453592  # Convert weight from lbs to kg
-    # TODO: Calculate daily total calories based on user's fitness goal (how does the goal correspond to bulk, maintain, cut?)
-    daily_tot_cal = maintenance_cal
-    meal_cal = daily_tot_cal
+    daily_cal = calculate_daily_cal(user_data)
+    #TODO: Implement another column in supabase for the number of meals per day in User table
+    meal_cal = daily_cal // 3
     meal_cal_lower = meal_cal - 50
     meal_cal_upper = meal_cal + 50
     protein_goal = 0.24 * meal_cal_upper
