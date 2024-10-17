@@ -16,8 +16,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def calculate_meal(user_data: Dict[str, Any], menu: List[Dict[str, Any]]) -> Dict[str, Any]:
     daily_cal = calculate_daily_cal(user_data)
-    #TODO: Implement another column in supabase for the number of meals per day in User table
-    meal_cal = daily_cal // 3
+    meal_cal = daily_cal // (user_data['meal_count'])
     meal_cal_lower = meal_cal - 50
     meal_cal_upper = meal_cal + 50
     protein_goal = 0.24 * meal_cal_upper
