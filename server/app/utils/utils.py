@@ -2,6 +2,7 @@ from fastapi import HTTPException
 from supabase import create_client, Client
 from typing import List, Dict, Any
 import os
+import re
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
@@ -75,14 +76,35 @@ def get_menu_data(station: int) -> List[Dict[str, Any]]:
 
 
 def categorize_items(menu: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    # Function to convert nutrient values to numbers
+    def convert_to_float(value: str) -> float:
+        numeric_value = re.findall(r"[-+]?\d*\.\d+|\d+", value)
+        return float(numeric_value[0]) if numeric_value else 0.0
+
+    # Convert nutrient values to numbers
+    for item in menu:
+        item["Protein"] = convert_to_float(item.get("Protein", "0"))
+        item["Calories"] = convert_to_float(item.get("Calories", "0"))
+        item["TotalFat"] = convert_to_float(item.get("TotalFat", "0"))
+        item["Iron"] = convert_to_float(item.get("Iron", "0"))
+        item["Potassium"] = convert_to_float(item.get("Potassium", "0"))
+        item["VitaminD"] = convert_to_float(item.get("VitaminD", "0"))
+
     # Categorize items based on healthiness rating
-    categorized_menu = sorted(menu, key=lambda x: (x["Protein"], -x["TotalFat"], -x["Sugar"]))
+    categorized_menu = sorted(menu, key=lambda x: (
+        -x["Protein"] / x["Calories"] if x["Calories"] > 0 else 0,
+        x["TotalFat"],
+        -x["Iron"],
+        -x["Potassium"],
+        -x["VitaminD"]
+    ))
     return categorized_menu
 
 def calculate_daily_cal(user_data: Dict[str, Any]) -> int:
     # Calculate BMR using Mifflin-St Jeor Equation
     user_data['height'] *= 2.54  # Convert height from inches to cm
     user_data['weight'] *= 0.453592  # Convert weight from lbs to kg
+
     pal = user_data['activity_level'] / 10
 
     if user_data['gender'] == False:
