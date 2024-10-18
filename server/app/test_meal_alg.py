@@ -56,7 +56,8 @@ def test_calculate_meal():
     menu_data = get_menu_data(station_id)
     categorized_items = categorize_items(menu_data)
     meal = calculate_meal(user_data, categorized_items)
-    print(f"Meal: {meal}")
+    assert meal is not None, f"Meal should not be None."
+    print(f"Calculated Lunch Meal: {meal}")
 
 
 if __name__ == "__main__":
